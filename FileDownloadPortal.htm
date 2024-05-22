@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+		<meta name="author" content="PRogers@Enhance.Group" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" type="text/css; charset=utf-8" href="FileDownloadPortal.css" />
+		<link rel="icon" href="data:;base64,=" />
+		<title>File Download Portal</title>
+	</head>
+	<body>
+		<div name="functionality-admin" id="functionality-admin">
+			<a href="FileDownloadPortal.htm"><img width="32" height="32" alt="Home" name="home-logo" id="home-logo" src="FileDownloadPortal.svg" longdesc="https://www.svgrepo.com/svg/521156/home-4" /></a>&nbsp;
+			<input type="hidden" name="html-ver" id="html-ver" value="2024-05-22b" />
+			<input type="hidden" name="css-ver" id="css-ver" value="&nbsp;" />
+			<input type="hidden" name="js-ver" id="js-ver" value="&nbsp;" />
+			<label for="lang-pref">Language: </label><select name="lang-pref" id="lang-pref">
+				<option value="en">en - English</option>
+				<option value="fr">fr - French</option>
+			</select>
+			&nbsp;<button type="button" name="cookie" id="cookie-save" class="start-hidden">Save to cookies</button>
+			&nbsp;<button type="button" name="cookie" id="cookie-delete" class="start-hidden">Delete from cookies</button>
+			&nbsp;<a name="about" id="about" target="_blank" href="FileDownloadPortal.md">About</a>
+			<br />
+		</div><!-- name="functionality-admin" id="functionality-admin" -->
+		<div name="search-criteria" id="search-criteria">
+			<h3>Search criteria</h3>
+			<form name="search-info" id="search-info" method="get" action="#" ><!-- http://127.0.0.1:80/ --><input type="reset" value="Reset" />
+				<dl>
+					<div name="date-range" id=date-range">
+						<dt><label for="iso-period">Accounting period: </label></dt>
+						<dd>
+							<input type="text" name="iso-period" id="iso-period" size="8" pattern="[0-9]{4}(-)?([Qq][1-4]|[01][1-9])?" />
+							<small>(<a href="https://en.wikipedia.org/wiki/ISO_8601" target="_blank">ISO&nbsp;8601</a>&nbsp;
+							based period format - 1999,&nbsp;&nbsp;1999-01,&nbsp;&nbsp;1999-Q1&nbsp;)</small><br />
+							<input type="button" name="period-preset" id="last-month" value="Last month" />&nbsp;
+							<input type="button" name="period-preset" id="last-quarter" value="Last quarter" />&nbsp;
+							<input type="button" name="period-preset" id="last-year" value="Last year" />&nbsp;
+							<input type="button" name="period-preset" id="since-som" value="Since SOM" />&nbsp;
+							<input type="button" name="period-preset" id="since-soq" value="Since SOQ" />&nbsp;
+							<input type="button" name="period-preset" id="since-soy" value="Since SOY" />&nbsp;
+							<input type="button" name="period-preset" id="since-creation" value="Since creation" />&nbsp;
+						</dd>
+						<dt><label for="first-date">Date of first day within period range: </label></dt>
+						<dd>
+							<input type="date" name="first-date" id="first-date" size="10" pattern="\d{4}-\d{2}-\d{2}" min="1970-01-01" max="2199-12-31" />
+							<small>(in your browser locale format)</small>
+						</dd>
+						<dt><label for="last-date">Date of last day within period range: </label></dt>
+						<dd>
+							<input type="date" name="last-date" id="last-date" size="10" pattern="\d{4}-\d{2}-\d{2}" min="1970-01-01" max="2199-12-31" />
+							<small>(in your browser locale format)</small>
+						</dd>
+					</div><!-- name="date-range" id=date-range" -->
+				</dl>
+				<input type="submit" name="search-submit" id="search-submit" value="Submit" />&nbsp;
+				<button type="button" name="copy-link" id="copy-link">Copy link</button>
+			</form>
+		</div>
+		<div name="search-summary" id="search-summary" class="start-hidden">
+			<h3>Search summary <span name="search-wip" id="search-wip">...</span></h3>
+			The period covers <span name="num-days" id="num-days" >...</span> day(s).&nbsp;
+			Found <span name="num-recs" id="num-recs" >...</span> record(s).&nbsp;
+			Save list of shown results as TAB separated&nbsp;<button type="button" name="results-list" id="results-list">CSV file</button><br />
+			Download a ZIP archive of shown files (even if none) <a name="download-all" id="download-all" href="#" >...</a>&nbsp;
+			<br />
+		</div>
+		<div name="page-nav" id="page-nav-top">
+			<br /><label for="page-size">Page size:</label>
+			<input type="number" name="page-size" id="page-size" value="0" min="0" step="1" />&nbsp;
+			<small>(Use 0 for a single page)</small>&nbsp;&nbsp;&nbsp;
+			<span name="page-nav" id="page-nav-summary" class="start-hidden">
+				Page <span name="page-nav" id="page-nav-page-num">0</span>
+				of&nbsp;&nbsp;<span name="page-nav" id="page-nav-page-max">0</span>
+				showing records <span name="page-nav" id="page-nav-rec-first">0</span>
+				to <span name="page-nav" id="page-nav-rec-last">0</span>
+				of&nbsp;&nbsp;<span name="page-nav" id="page-nav-rec-max">0</span>
+			</span><br /><br />
+			<div name="page-nav" id="page-nav-links" class="start-hidden">
+			&nbsp;<a href="#" name="page-nav-link" id="page-nav-link-first">First</a>&nbsp;
+			&nbsp;<a href="#" name="page-nav-link" id="page-nav-link-prev">Previous</a>&nbsp;
+			<span name="page-nav" id="page-nav-page-links"> ... <!-- 1, 2, 3, 4, 5, ... -3, -2, -1 --></span>
+			&nbsp;<a href="#" name="page-nav-link" id="page-nav-link-next">Next</a>&nbsp;
+			&nbsp;<a href="#" name="page-nav-link" id="page-nav-link-last">Last</a>&nbsp;
+			&nbsp;<a href="#" name="page-nav-link" id="page-nav-link-all">View all</a>&nbsp;
+			&nbsp;<label for="page-goto"><a href="#" name="page-nav-link" id="page-nav-link-goto">Go to page:</a></label>&nbsp;
+			<input type="number" name="page-goto" id="page-goto" value="0" min="0" step="1" />
+			</div>
+		</div>
+		<div name="search-results" id="search-results" class="start-hidden">
+			<h3>Search results</h3>
+			<span name="select-presets" id="select-presets">Check 
+				<button type="button" name="select-all" id="select-all">All</button>&nbsp;
+				<button type="button" name="select-none" id="select-none">None</button>&nbsp;
+				<button type="button" name="select-inverse" id="select-inverse">Invert</button>&nbsp;&nbsp;&nbsp;
+			</span>
+			<span name="shown-presets" id="shown-presets">Show 
+				<button type="button" name="shown-cheched" id="shown-checked">Checked</button>&nbsp;
+				<button type="button" name="shown-unchecked" id="shown-unchecked">Unchecked</button>&nbsp;
+				<button type="button" name="shown-both" id="shown-both">Both</button>&nbsp;&nbsp;&nbsp;
+			</span>
+			&nbsp;Download selected&nbsp;<a name="download-selected" id="download-selected" href="#" >&nbsp;0&nbsp;</a>
+			<table name="results-table" id="results-table"><thead></thead><tbody></tbody><tfoot class="start-hidden"></tfoot></table>
+		</div>
+		<div name="keep-clear-of-status" id="keep-clear-of-status"><br /><br /></div>
+	</body>
+	<script type="text/javascript" charset="utf-8" src="FileDownloadPortal.js"></script>
+</html>

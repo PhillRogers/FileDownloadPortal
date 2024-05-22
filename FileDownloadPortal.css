@@ -1,0 +1,49 @@
+/* functionality */
+#css-ver::after { /* does not seem to populate DOM */
+	content: "2024-05-22a";
+	display:none;
+}
+.start-hidden {
+	display:none;
+}
+
+/* aesthetics */
+li {
+	color:black;
+	font-size:80%;
+}
+p {
+	font-size:80%;
+}
+tr:nth-child(even) {
+	background-color: #f2f2f2;
+}
+td,th {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+#page-size {
+    width: 4em;
+}
+#page-goto {
+    width: 4em;
+}
+#home-logo {
+	vertical-align: bottom;
+}
+.column-head:link {
+	color: black;
+	text-decoration: none;
+}
+.column-head:visited {
+	color: black;
+	text-decoration: none;
+}
+.column-head:hover {
+	color: black;
+	text-decoration: underline;
+}
+.column-head:active {
+	color: black;
+	text-decoration: none;
+}
