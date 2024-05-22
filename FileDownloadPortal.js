@@ -1,5 +1,5 @@
 // console.log('__LINE__1 ');
-var js_ver = "2024-05-22b";
+var js_ver = "2024-05-22c";
 var period_preset = ''; // remember last button pressed
 var page_num = 0;
 var page_max = 0;
@@ -448,8 +448,8 @@ function back_end(query){ // simulating a back-end database query
 	let json_txt = '{ "records" : [ ';
 	let rec_count = 0;
 	for(let day_idx=0; day_idx < num_days; day_idx++){
-		if( true ){ // testing for missing rows
-		// if( Math.random() >0.4 ){ // 60% chance a file is available.
+		// if( true ){ // testing for missing rows
+		if( Math.random() >0.4 ){ // 60% chance a file is available.
 			let date_stamp = (new Date(Date.parse(first_date) + (day_idx * 1000 * 60 * 60 * 24)).toISOString()).split('T')[0];
 			let filename = `Example_${date_stamp}.pdf`
 			other_info = calculateCRC(filename);
