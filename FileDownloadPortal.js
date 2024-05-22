@@ -1,5 +1,5 @@
 // console.log('__LINE__1 ');
-var js_ver = "2024-05-22c";
+var js_ver = "2024-05-22e";
 var period_preset = ''; // remember last button pressed
 var page_num = 0;
 var page_max = 0;
@@ -55,14 +55,14 @@ function body_load(){
 		document.getElementById("last-date").value = today;
 	}
 	if(false){ // cookie
-		console.log(`SoFar __LINE__176 DocumentCookie-=>${document.cookie}<=-`);
+		console.log(`SoFar __LINE__58 DocumentCookie-=>${document.cookie}<=-`);
 		let lang_pref = " "+getCookie("lang-pref")+" ";
-		console.log(`SoFar __LINE__179 lp-=>${lang_pref}<=-`);
+		console.log(`SoFar __LINE__60 lp-=>${lang_pref}<=-`);
 		if(" en fr ".includes(lang_pref) ){
 			document.getElementById('lang-pref').value = lang_pref;
-			console.log('SoFar __LINE__181 ');
+			console.log('SoFar __LINE__63 ');
 			update_lang_fromjs(document.getElementById('lang-pref'));
-			console.log('SoFar __LINE__182 ');
+			console.log('SoFar __LINE__65 ');
 		}
 	}
 	if(window.location.search.length >0){ // should do some validation on each
@@ -278,7 +278,7 @@ function update_period_fromjs(calling_element){
 }
 function get_iso_period_from_date_range(first_date, last_date){
 	let iso_period = '';
-	// console.log(`fd="${first_date}"  ld="${last_date}"  __LINE__430 `);
+	// console.log(`fd="${first_date}"  ld="${last_date}"  __LINE__281 `);
 	let sodt = new Date(first_date);
 	let eodt = new Date(last_date);
 	let fd_y = sodt.getFullYear();
@@ -296,7 +296,7 @@ function get_iso_period_from_date_range(first_date, last_date){
 	if(!iso_period && ( fd_m == ld_m )){ iso_period = `${fd_y.toString()}-${fd_m.toString().padStart(2,"0")}`; }
 	if(!iso_period && ( (ld_m - fd_m) != 2 )){ iso_period = "-5"; }
 	if(!iso_period && ( !(ld_m % 3) )){ iso_period = `${ld_y.toString()}-Q${(ld_m/3).toString()}`; }
-	// console.log(`ip="${iso_period}"  __LINE__448 `);
+	// console.log(`ip="${iso_period}"  __LINE__299 `);
 	if(iso_period.substring(0,1) == '-'){ iso_period = ''; }
 	return iso_period;
 }
@@ -353,21 +353,21 @@ function update_cookies_fromhtml(){
 	update_cookies_fromjs(this);
 }
 function update_cookies_fromjs(calling_element){
-	console.log(`SoFar __LINE__95 DocumentCookie-=>${document.cookie}<=-`);
+	console.log(`SoFar __LINE__356 DocumentCookie-=>${document.cookie}<=-`);
     switch(calling_element.id){
 		case "cookie-save": if(true){
-			console.log('SoFar __LINE__98 ');
+			console.log('SoFar __LINE__359 ');
 			let lang_pref = document.getElementById('lang-pref').value;
 			setCookie("lang-pref", lang_pref, 365);
 			break;
 		}
 		case "cookie-delete": if(true){
-			console.log('SoFar __LINE__104 ');
+			console.log('SoFar __LINE__365 ');
 			setCookie("lang-pref", "", 0);
 			break;
 		}
 	}
-	console.log(`SoFar __LINE__109 DocumentCookie-=>${document.cookie}<=-`);
+	console.log(`SoFar __LINE__370 DocumentCookie-=>${document.cookie}<=-`);
 }
 function copy_link(){
 	navigator.clipboard.writeText('');
@@ -523,13 +523,14 @@ function render_table(col_idx_of_link){
 	tfoot.style.display = "block";
 }
 function render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last){
-	//console.log(`SoFar __LINE__538  prf=${page_row_first}  prl=${page_row_last}`);
+	//console.log(`SoFar __LINE__526  prf=${page_row_first}  prl=${page_row_last}`);
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	document.getElementById("page-nav-rec-first").innerText = page_row_first.toString();
 	document.getElementById("page-nav-rec-last").innerText = page_row_last.toString();
 	document.getElementById("page-nav-rec-max").innerText = num_recs.toString();
 	tbody.replaceChildren(); // clear all table rows
+
 	for(let row_idx=page_row_first; row_idx <= page_row_last; row_idx++){
 		let newRow = tbody.insertRow();
 		newRow.setAttribute("name", "results-row-"+row_idx.toString());
@@ -567,6 +568,11 @@ function render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last){
 			}
 		}
 	}
+	let selected_count = 0;
+	for(let rec_idx=1; rec_idx <= num_recs; rec_idx++){
+		if(record_ary[rec_idx][0] == "x") selected_count++;
+	}
+	document.getElementById("download-selected").innerHTML = "&nbsp;"+selected_count.toString()+"&nbsp;";
 }
 function update_page_size_fromhtml(){
 	update_page_size_fromjs(this);
@@ -671,57 +677,60 @@ function update_selected_fromhtml(){
 }
 function update_selected_fromjs(calling_element){
 	let num_recs = record_ary.length -1;
-	let selected_count = 0;
     if(calling_element.type == "checkbox"){
 		let rec_idx = parseInt(calling_element.id.split('-')[2]);
-		selected_count = parseInt(document.getElementById("download-selected").textContent);
 		if(calling_element.checked){
-			selected_count++;
 			calling_element.parentElement.getElementsByTagName("label")[0].innerText = "x";
 			record_ary[rec_idx][0] = "x";
 		} else {
-			selected_count--;
 			calling_element.parentElement.getElementsByTagName("label")[0].innerText = " ";
 			record_ary[rec_idx][0] = "";
 		}
 	} else {
-		let check_ary = document.getElementsByName("download-check");
 		switch(calling_element.id){
 			case "select-all": if(true){
-				for(let rec_idx=num_recs; rec_idx > 0; rec_idx--){
-					check_ary[rec_idx -1].checked = true;
-					check_ary[rec_idx -1].parentElement.getElementsByTagName("label")[0].innerText = "x";
-					record_ary[rec_idx][0] = "x";
+				for(let rec_idx=1; rec_idx <= num_recs; rec_idx++){
+					let check_box = document.getElementById(`download-check-${rec_idx}`);
+					if(check_box){
+						check_box.checked = true;
+						check_box.parentElement.getElementsByTagName("label")[0].innerText = "x";
+						record_ary[rec_idx][0] = "x";
+					}
 				}
 				break;
 			}
 			case "select-none": if(true){
-				for(let rec_idx=num_recs; rec_idx > 0; rec_idx--){
-					check_ary[rec_idx -1].checked = false;
-					check_ary[rec_idx -1].parentElement.getElementsByTagName("label")[0].innerText = "";
-					record_ary[rec_idx][0] = "";
-				}
-				break;
-			}
-			case "select-inverse": if(true){
-				for(let rec_idx=num_recs; rec_idx > 0; rec_idx--){
-					check_ary[rec_idx -1].checked = ! check_ary[rec_idx -1].checked;
-					if(check_ary[rec_idx -1].checked){
-						check_ary[rec_idx -1].parentElement.getElementsByTagName("label")[0].innerText = "x";
-						record_ary[rec_idx][0] = "x";
-					} else {
-						check_ary[rec_idx -1].parentElement.getElementsByTagName("label")[0].innerText = "";
+				for(let rec_idx=1; rec_idx <= num_recs; rec_idx++){
+					let check_box = document.getElementById(`download-check-${rec_idx}`);
+					if(check_box){
+						check_box.checked = false;
+						check_box.parentElement.getElementsByTagName("label")[0].innerText = "";
 						record_ary[rec_idx][0] = "";
 					}
 				}
 				break;
 			}
-		}
-		for(let rec_idx=num_recs; rec_idx > 0; rec_idx--){
-			if(check_ary[rec_idx -1].checked){
-				selected_count++;
+			case "select-inverse": if(true){
+				for(let rec_idx=1; rec_idx <= num_recs; rec_idx++){
+					let check_box = document.getElementById(`download-check-${rec_idx}`);
+					check_box.checked = ! check_box.checked;
+					if(check_box){
+						if(check_box.checked){
+							check_box.parentElement.getElementsByTagName("label")[0].innerText = "x";
+							record_ary[rec_idx][0] = "x";
+						} else {
+							check_box.parentElement.getElementsByTagName("label")[0].innerText = "";
+							record_ary[rec_idx][0] = "";
+						}
+					}
+				}
+				break;
 			}
 		}
+	}
+	let selected_count = 0;
+	for(let rec_idx=1; rec_idx <= num_recs; rec_idx++){
+		if(record_ary[rec_idx][0] == "x") selected_count++;
 	}
 	document.getElementById("download-selected").innerHTML = "&nbsp;"+selected_count.toString()+"&nbsp;";
 }
