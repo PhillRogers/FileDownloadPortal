@@ -1,6 +1,6 @@
 /* functionality */
 #css-ver::after { /* does not seem to populate DOM */
-	content: "2024-05-22e";
+	content: "2024-05-23a";
 	display:none;
 }
 .start-hidden {
@@ -46,4 +46,12 @@ td,th {
 .column-head:active {
 	color: black;
 	text-decoration: none;
+}
+input {
+	margin-left: 4pt;
+	margin-right: 4pt;
+}
+#skip-to-content {
+	margin-left: 4pt;
+	margin-right: 4pt;
 }

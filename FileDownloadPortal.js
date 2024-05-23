@@ -1,5 +1,5 @@
 // console.log('__LINE__1 ');
-var js_ver = "2024-05-22e";
+var js_ver = "2024-05-23a";
 var period_preset = ''; // remember last button pressed
 var page_num = 0;
 var page_max = 0;
@@ -434,6 +434,7 @@ function search_submit_fromjs(submited){
 		col_idx_of_link = 2; // index from 1 of received data (not including the 'Check' column)
 		// consider pre-pending a column for checked state
 		render_table(col_idx_of_link);
+		document.getElementById("skip-to-content").style.display = "inline";
 		document.getElementById("search-results").style.display = "block";
 		document.getElementById("search-results").getElementsByTagName("tfoot")[0].style.display = "block";
 		// the visibility of tfoot can be tested to ensure the whole table has finished loading
@@ -583,6 +584,7 @@ function update_page_size_fromjs(calling_element){
 	document.getElementById("page-size").value = page_size;
 	if(num_recs > 0){
 		page_num = 1;
+		document.getElementById("page-goto").value = page_num;
 		render_table(col_idx_of_link);
 	}
 }
