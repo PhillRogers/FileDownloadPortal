@@ -507,7 +507,7 @@ function back_end_interface(query){ // simulating a back-end database query
 		let filter_1val = backendParams.get('filter-1');
 		let filter_2val = backendParams.get('filter-2');
 		for(let day_idx=0; day_idx < num_days; day_idx++){
-			if( Math.random() >0.0 ){ // 0.4 = 60% chance a file is available. Use 0.0 for all rows, making off-by-one issues easier to spot.
+			if( Math.random() >0.4 ){ // 0.4 = 60% chance a file is available. Use 0.0 for all rows, making off-by-one issues easier to spot.
 				let date_stamp = (new Date(Date.parse(first_date) + (day_idx * 1000 * 60 * 60 * 24)).toISOString()).split('T')[0];
 				let filename = `Example_${date_stamp}.pdf`
 				other_info = calculateCRC(filename).toString();
