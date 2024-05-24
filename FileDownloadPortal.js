@@ -56,14 +56,14 @@ function body_load(){
 		document.getElementById("last-date").value = today;
 	}
 	if(false){ // cookie
-		console.log(`__LINE__58 DocumentCookie-=>${document.cookie}<=-`);
+		console.log(`__LINE__59 DocumentCookie-=>${document.cookie}<=-`);
 		let lang_pref = " "+getCookie("lang-pref")+" ";
-		console.log(`__LINE__60 lp-=>${lang_pref}<=-`);
+		console.log(`__LINE__61 lp-=>${lang_pref}<=-`);
 		if(" en fr ".includes(lang_pref) ){
 			document.getElementById('lang-pref').value = lang_pref;
-			console.log('__LINE__63 ');
+			console.log('__LINE__64 ');
 			update_lang_fromjs(document.getElementById('lang-pref'));
-			console.log('__LINE__65 ');
+			console.log('__LINE__66 ');
 		}
 	}
 	if(window.location.search.length >0){ // should do some validation on each
@@ -390,21 +390,21 @@ function update_cookies_fromhtml(){
 	update_cookies_fromjs(this);
 }
 function update_cookies_fromjs(calling_element){
-	console.log(`__LINE__356 DocumentCookie-=>${document.cookie}<=-`);
+	console.log(`__LINE__393 DocumentCookie-=>${document.cookie}<=-`);
     switch(calling_element.id){
 		case "cookie-save": if(true){
-			console.log('__LINE__359 ');
+			console.log('__LINE__396 ');
 			let lang_pref = document.getElementById('lang-pref').value;
 			setCookie("lang-pref", lang_pref, 365);
 			break;
 		}
 		case "cookie-delete": if(true){
-			console.log('__LINE__365 ');
+			console.log('__LINE__402 ');
 			setCookie("lang-pref", "", 0);
 			break;
 		}
 	}
-	console.log(`__LINE__370 DocumentCookie-=>${document.cookie}<=-`);
+	console.log(`__LINE__407 DocumentCookie-=>${document.cookie}<=-`);
 }
 function copy_link(){
 	navigator.clipboard.writeText('');
@@ -462,7 +462,7 @@ function search_submit_fromjs(submited){
 		}
 	}
 	record_ary = [];
-	// console.log(`__LINE__462 -=>${query}<=-`);
+	// console.log(`__LINE__465 -=>${query}<=-`);
 	response_json_txt = back_end_interface(query); // call back-end search to get array of results.
 	let jo = JSON.parse(response_json_txt);
 	for(let col_name in jo.records[0]) col_names.push(col_name);
@@ -496,7 +496,7 @@ function back_end_interface(query){ // simulating a back-end database query
 	if(query){ 
 		// replace with your own code to send the request and get the response
 		const backendParams = new URLSearchParams(query);
-		// console.log(`__LINE__496 -=>${backendParams}<=-`);
+		// console.log(`__LINE__499 -=>${backendParams}<=-`);
 		const first_date = backendParams.get('first-date');
 		const last_date = backendParams.get('last-date');
 		const elapsed_time = Date.parse(last_date) - Date.parse(first_date);
@@ -538,7 +538,7 @@ function back_end_interface(query){ // simulating a back-end database query
 	return json_txt;
 }
 function render_table(col_idx_of_link){
-	// console.log('__LINE__521 '+'Rendering page '+ page_num.toString() );
+	// console.log('__LINE__541 '+'Rendering page '+ page_num.toString() );
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	const thead = document.getElementById("search-results").getElementsByTagName("thead")[0];
@@ -591,7 +591,7 @@ function render_table(col_idx_of_link){
 	tfoot.style.display = "block";
 }
 function render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last){
-	//console.log(`__LINE__526  prf=${page_row_first}  prl=${page_row_last}`);
+	//console.log(`__LINE__594  prf=${page_row_first}  prl=${page_row_last}`);
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	document.getElementById("page-nav-rec-first").innerText = page_row_first.toString();
@@ -811,7 +811,7 @@ function do_download_fromhtml(){
 	do_download_fromjs(this);
 }
 function do_download_fromjs(calling_element){ // actual file download is up to the implementer
-	console.log('__LINE__794 '+calling_element.id);
+	console.log('__LINE__814 '+calling_element.id);
 	window.alert("This is just a demo page.\nHow these links cause the actual file download is up to the implementer.");
 }
 // see MD doc for sources of the following functions
