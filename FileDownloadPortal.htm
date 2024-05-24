@@ -13,7 +13,7 @@
 	<body>
 		<div name="functionality-admin" id="functionality-admin">
 			<a href="FileDownloadPortal.htm"><img width="32" height="32" alt="Home" name="home-logo" id="home-logo" src="FileDownloadPortal.svg" longdesc="https://www.svgrepo.com/svg/521156/home-4" /></a>
-			<input type="hidden" name="html-ver" id="html-ver" value="2024-05-23a" />
+			<input type="hidden" name="html-ver" id="html-ver" value="2024-05-24c" />
 			<input type="hidden" name="css-ver" id="css-ver" value="" />
 			<input type="hidden" name="js-ver" id="js-ver" value="" />
 			<label for="lang-pref">Language: </label><select name="lang-pref" id="lang-pref">
@@ -29,8 +29,13 @@
 		<div name="search-criteria" id="search-criteria">
 			<h3>Search criteria</h3>
 			<form name="search-info" id="search-info" method="get" action="#" ><!-- http://127.0.0.1:80/ -->
-				<input type="reset" value="Reset" />
-				<dl>
+				<input type="reset" value="Reset" />&nbsp;
+				<label for="filter-enable">Enable filters:</label><input type="checkbox" id="filter-enable" />
+				<span id="filter-logic-radio" class="start-hidden">Multiple filter logic:
+					&nbsp;<label for="filter-logic-and">AND</label><input type="radio" name="filter-logic" value="and" checked />
+					&nbsp;<label for="filter-logic-or">OR</label><input type="radio" name="filter-logic" value="or" />
+				</span>
+				<dl name="query-fields" id="query-fields">
 					<div name="date-range" id=date-range">
 						<dt><label for="iso-period">Accounting period: </label></dt>
 						<dd>

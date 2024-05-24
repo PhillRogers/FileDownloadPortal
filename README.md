@@ -27,6 +27,8 @@
 	Row selection is preserved across page navigation to help user explore as required and still only need one download.
 	Ascending or descending sort by clicking on any column name. Column names are accessible from keyboard tab index.
 	Can show only checked, unchecked or both.  Download selected includes unseen pages.
+	Optional column filters dynamically created, with clear 'AND' / 'OR' choice.
+# Work in progress:
 # Examples:
 	?period-preset=last-quarter&page-size=0&search-submit#search-results
 # References:

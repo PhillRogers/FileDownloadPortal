@@ -1,5 +1,5 @@
 // console.log('__LINE__1 ');
-var js_ver = "2024-05-23a";
+var js_ver = "2024-05-24c";
 var period_preset = ''; // remember last button pressed
 var page_num = 0;
 var page_max = 0;
@@ -8,6 +8,7 @@ var col_idx_of_link = -1;
 var sort_col = 0; // index from 1
 var record_ary = []; // data records indexed from 1 as 0 contains the column header row
 var shown = 'both' // checked unchecked both
+var filter_enabled = false;
 if(true){ // initialize event handlers
 	window.addEventListener("load", body_load, false);
 	document.getElementById("iso-period").addEventListener("change", update_period_fromhtml, false);
@@ -20,27 +21,27 @@ if(true){ // initialize event handlers
 	document.getElementById("since-creation").addEventListener("click", update_period_fromhtml, false);
 	document.getElementById("first-date").addEventListener("change", update_period_fromhtml, false);
 	document.getElementById("last-date").addEventListener("change", update_period_fromhtml, false);
+	document.getElementById("lang-pref").addEventListener("click", update_lang_fromhtml, false);
+	document.getElementById("cookie-save").addEventListener("click", update_cookies_fromhtml, false);
+	document.getElementById("cookie-delete").addEventListener("click", update_cookies_fromhtml, false);
+	document.getElementById("filter-enable").addEventListener("click", update_filter_fromhtml, false);
 	document.getElementById("copy-link").addEventListener("click", copy_link, false);
 	document.getElementById("search-submit").addEventListener("click", search_submit_fromhtml, false);
-	document.getElementById("download-all").addEventListener("click", do_download_fromhtml, false);
+	document.getElementById("page-size").addEventListener("change", update_page_size_fromhtml, false);
+	for(let pnl of document.getElementsByName("page-nav-link")){
+		pnl.addEventListener('click', proc_page_nav_link_fromhtml, false);
+	}
 	document.getElementById("select-all").addEventListener("click", update_selected_fromhtml, false);
 	document.getElementById("select-none").addEventListener("click", update_selected_fromhtml, false);
 	document.getElementById("select-inverse").addEventListener("click", update_selected_fromhtml, false);
 	document.getElementById("shown-checked").addEventListener("click", update_shown_fromhtml, false);
 	document.getElementById("shown-unchecked").addEventListener("click", update_shown_fromhtml, false);
 	document.getElementById("shown-both").addEventListener("click", update_shown_fromhtml, false);
+	document.getElementById("download-all").addEventListener("click", do_download_fromhtml, false);
 	document.getElementById("download-selected").addEventListener("click", do_download_fromhtml, false);
 	document.getElementById("results-list").addEventListener("click", download_table_as_csv, false);
-	document.getElementById("lang-pref").addEventListener("click", update_lang_fromhtml, false);
-	document.getElementById("page-size").addEventListener("change", update_page_size_fromhtml, false);
-	document.getElementById("cookie-save").addEventListener("click", update_cookies_fromhtml, false);
-	document.getElementById("cookie-delete").addEventListener("click", update_cookies_fromhtml, false);
-	for(let pnl of document.getElementsByName("page-nav-link")){
-		pnl.addEventListener('click', proc_page_nav_link_fromhtml, false);
-	}
 }
 function body_load(){
-	document.cookie = "username=John Doe; expires=Thu, 18 Dec 2013 12:00:00 UTC"; // debug
 	document.getElementById("js-ver").value = js_ver;
     if(true){
 		let today = new Date().toJSON().split('T')[0];
@@ -55,14 +56,14 @@ function body_load(){
 		document.getElementById("last-date").value = today;
 	}
 	if(false){ // cookie
-		console.log(`SoFar __LINE__58 DocumentCookie-=>${document.cookie}<=-`);
+		console.log(`__LINE__58 DocumentCookie-=>${document.cookie}<=-`);
 		let lang_pref = " "+getCookie("lang-pref")+" ";
-		console.log(`SoFar __LINE__60 lp-=>${lang_pref}<=-`);
+		console.log(`__LINE__60 lp-=>${lang_pref}<=-`);
 		if(" en fr ".includes(lang_pref) ){
 			document.getElementById('lang-pref').value = lang_pref;
-			console.log('SoFar __LINE__63 ');
+			console.log('__LINE__63 ');
 			update_lang_fromjs(document.getElementById('lang-pref'));
-			console.log('SoFar __LINE__65 ');
+			console.log('__LINE__65 ');
 		}
 	}
 	if(window.location.search.length >0){ // should do some validation on each
@@ -99,6 +100,42 @@ function body_load(){
 			search_submit_fromjs();
 			// DeBug: does not get search results. Consider as a promise, after loading has settled?
 		}
+	}
+}
+function update_filter_fromhtml(){
+	update_filter_fromjs(this);
+}
+function update_filter_fromjs(caling_element){
+	filter_enabled = document.getElementById('filter-enable').checked;
+	let dl = document.getElementById('query-fields');
+	if(filter_enabled){
+		document.getElementById('filter-logic-radio').style.display = "inline";
+		let col_names = ['Check'];
+		// response_json_txt = '{ "records" : [ { "Other info":"", "PDF download":"" } ]}';
+		response_json_txt = back_end_interface(''); // call back-end search to get array of just header row.
+		let jo = JSON.parse(response_json_txt);
+		for(let col_name in jo.records[0]) col_names.push(col_name);
+		record_ary.push(col_names);
+		let num_cols = record_ary[0].length;
+		if(true){ // just using "dl.innerHTML += " breaks the date selectors.
+			let new_dt = document.createElement("dt"); dl.appendChild(new_dt);
+			new_dt.setAttribute("name", "filter");
+			new_dt.innerHTML = '<b>Filters:</b>';
+			let new_dd = document.createElement("dd"); dl.appendChild(new_dd);
+			new_dd.setAttribute("name", "filter");
+			new_dd.innerHTML = '<small>Enter the exact text which must appear in the record field ... </small>';
+			for(let col_idx=1; col_idx < num_cols; col_idx++){
+				let new_dt = document.createElement("dt"); dl.appendChild(new_dt);
+				new_dt.setAttribute("name", "filter");
+				new_dt.innerHTML = record_ary[0][col_idx];
+				let new_dd = document.createElement("dd"); dl.appendChild(new_dd);
+				new_dd.setAttribute("name", "filter");
+				new_dd.innerHTML = `<input type="text" value="" id="filter-${col_idx}" title="filter on ${col_idx}"/>`;
+			}
+		}
+	} else {
+		document.getElementById('filter-logic-radio').style.display = "none";
+		while(fe = document.getElementsByName("filter")[0]){ fe.remove(); }
 	}
 }
 function update_period_fromhtml(){
@@ -278,7 +315,7 @@ function update_period_fromjs(calling_element){
 }
 function get_iso_period_from_date_range(first_date, last_date){
 	let iso_period = '';
-	// console.log(`fd="${first_date}"  ld="${last_date}"  __LINE__281 `);
+	// console.log('__LINE__318 '+`fd="${first_date}"  ld="${last_date}"  __LINE__281 `);
 	let sodt = new Date(first_date);
 	let eodt = new Date(last_date);
 	let fd_y = sodt.getFullYear();
@@ -296,7 +333,7 @@ function get_iso_period_from_date_range(first_date, last_date){
 	if(!iso_period && ( fd_m == ld_m )){ iso_period = `${fd_y.toString()}-${fd_m.toString().padStart(2,"0")}`; }
 	if(!iso_period && ( (ld_m - fd_m) != 2 )){ iso_period = "-5"; }
 	if(!iso_period && ( !(ld_m % 3) )){ iso_period = `${ld_y.toString()}-Q${(ld_m/3).toString()}`; }
-	// console.log(`ip="${iso_period}"  __LINE__299 `);
+	// console.log('__LINE__336 '+`ip="${iso_period}"  __LINE__299 `);
 	if(iso_period.substring(0,1) == '-'){ iso_period = ''; }
 	return iso_period;
 }
@@ -353,21 +390,21 @@ function update_cookies_fromhtml(){
 	update_cookies_fromjs(this);
 }
 function update_cookies_fromjs(calling_element){
-	console.log(`SoFar __LINE__356 DocumentCookie-=>${document.cookie}<=-`);
+	console.log(`__LINE__356 DocumentCookie-=>${document.cookie}<=-`);
     switch(calling_element.id){
 		case "cookie-save": if(true){
-			console.log('SoFar __LINE__359 ');
+			console.log('__LINE__359 ');
 			let lang_pref = document.getElementById('lang-pref').value;
 			setCookie("lang-pref", lang_pref, 365);
 			break;
 		}
 		case "cookie-delete": if(true){
-			console.log('SoFar __LINE__365 ');
+			console.log('__LINE__365 ');
 			setCookie("lang-pref", "", 0);
 			break;
 		}
 	}
-	console.log(`SoFar __LINE__370 DocumentCookie-=>${document.cookie}<=-`);
+	console.log(`__LINE__370 DocumentCookie-=>${document.cookie}<=-`);
 }
 function copy_link(){
 	navigator.clipboard.writeText('');
@@ -408,12 +445,25 @@ function search_submit_fromjs(submited){
 	document.getElementById("search-results").getElementsByTagName("thead")[0].replaceChildren(); // clear previous results if re-submitting with modified criteria
 	document.getElementById("search-results").getElementsByTagName("tbody")[0].replaceChildren(); // clear previous results if re-submitting with modified criteria
 	document.getElementById("search-results").getElementsByTagName("tfoot")[0].style.display = "none";
-	record_ary = []; 
-	let col_names = ['Check'];
+	if(record_ary.length > 1){ record_ary = record_ary.slice(0,1); }
 
 	// simplified example ... 
-	const query = '?first-date='+ document.getElementById("first-date").value +'&last-date='+ document.getElementById("last-date").value
-	response_json_txt = back_end(query); // call back-end search to get array of results.
+	let col_names = ['Check'];
+	let query = '?first-date='+ document.getElementById("first-date").value +'&last-date='+ document.getElementById("last-date").value
+	if(filter_enabled){ // filters
+		let filter_logic = document.querySelector('input[name="filter-logic"]:checked').value;		
+		query += `&filter-logic=${filter_logic}`;
+		let num_cols = record_ary[0].length;
+		for(let col_idx = 1; col_idx < num_cols; col_idx++){
+			let f_val = document.getElementById("filter-"+col_idx.toString()).value;
+			if(f_val != ""){
+				query += `&filter-${col_idx}=${f_val}`;
+			}
+		}
+	}
+	record_ary = [];
+	// console.log(`__LINE__462 -=>${query}<=-`);
+	response_json_txt = back_end_interface(query); // call back-end search to get array of results.
 	let jo = JSON.parse(response_json_txt);
 	for(let col_name in jo.records[0]) col_names.push(col_name);
 	record_ary.push(col_names);
@@ -429,6 +479,7 @@ function search_submit_fromjs(submited){
 		}
 		record_ary.push(fld_ary);
 	}
+
 	let num_recs = record_ary.length -1;
 	if(num_recs > 0){ // render table of results
 		col_idx_of_link = 2; // index from 1 of received data (not including the 'Check' column)
@@ -440,38 +491,54 @@ function search_submit_fromjs(submited){
 		// the visibility of tfoot can be tested to ensure the whole table has finished loading
 	} // handle zero results with grace.
 }
-function back_end(query){ // simulating a back-end database query
-	const backendParams = new URLSearchParams(query);
-	const first_date = backendParams.get('first-date');
-	const last_date = backendParams.get('last-date');
-	const elapsed_time = Date.parse(last_date) - Date.parse(first_date);
-	const num_days = 1 + Math.round(elapsed_time / (1000 * 60 * 60 * 24));
-	let json_txt = '{ "records" : [ ';
-	let rec_count = 0;
-	for(let day_idx=0; day_idx < num_days; day_idx++){
-		// if( true ){ // testing for missing rows
-		if( Math.random() >0.4 ){ // 60% chance a file is available.
-			let date_stamp = (new Date(Date.parse(first_date) + (day_idx * 1000 * 60 * 60 * 24)).toISOString()).split('T')[0];
-			let filename = `Example_${date_stamp}.pdf`
-			other_info = calculateCRC(filename);
-			json_txt += `{ "Other info":"${other_info}", "PDF download":"${filename}" },`;
-			rec_count++;
+function back_end_interface(query){ // simulating a back-end database query
+	let json_txt = '';
+	if(query){ 
+		// replace with your own code to send the request and get the response
+		const backendParams = new URLSearchParams(query);
+		// console.log(`__LINE__496 -=>${backendParams}<=-`);
+		const first_date = backendParams.get('first-date');
+		const last_date = backendParams.get('last-date');
+		const elapsed_time = Date.parse(last_date) - Date.parse(first_date);
+		const num_days = 1 + Math.round(elapsed_time / (1000 * 60 * 60 * 24));
+		json_txt = '{ "records" : [ ';
+		let rec_count = 0;
+		let filter_logic = backendParams.get('filter-logic');
+		let filter_1val = backendParams.get('filter-1');
+		let filter_2val = backendParams.get('filter-2');
+		for(let day_idx=0; day_idx < num_days; day_idx++){
+			if( Math.random() >0.0 ){ // 0.4 = 60% chance a file is available. Use 0.0 for all rows, making off-by-one issues easier to spot.
+				let date_stamp = (new Date(Date.parse(first_date) + (day_idx * 1000 * 60 * 60 * 24)).toISOString()).split('T')[0];
+				let filename = `Example_${date_stamp}.pdf`
+				other_info = calculateCRC(filename).toString();
+				let matches_filters = true;
+				if(filter_logic){
+					if(filter_logic == "and"){
+						if(filter_1val) if(!(other_info.includes(filter_1val))) matches_filters = false;
+						if(filter_2val) if(!(filename.includes(filter_2val))) matches_filters = false;
+					}
+					if(filter_logic == "or"){
+						matches_filters = false;
+						if(filter_1val) if(other_info.includes(filter_1val)) matches_filters = true;
+						if(filter_2val) if(filename.includes(filter_2val)) matches_filters = true;
+					}
+				}
+				if(matches_filters){
+					json_txt += `{ "Other info":"${other_info}", "PDF download":"${filename}" },`;
+					rec_count++;
+				}
+			}
 		}
+		if(rec_count > 0){ json_txt = json_txt.trim().slice(0,-1); }
+		json_txt += ' ]}';
+	} else {
+		json_txt = '{ "records" : [ { "Other info":"", "PDF download":"" } ]}';
 	}
-	if(rec_count > 0){ json_txt = json_txt.trim().slice(0,-1); }
-	json_txt += ' ]}';
-	let jo_tmp = JSON.parse(json_txt); // tilt here if not valid
-    if(null){ // optional delay for realism
-		const date = Date.now();
-		let currentDate = null;
-		do {
-			currentDate = Date.now();
-		} while (currentDate - date < 2000);
-	}
+	let validate_jo = JSON.parse(json_txt); // tilt here if it fails basic validation
 	return json_txt;
 }
 function render_table(col_idx_of_link){
-	// console.log('Rendering page '+ page_num.toString() );
+	// console.log('__LINE__521 '+'Rendering page '+ page_num.toString() );
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	const thead = document.getElementById("search-results").getElementsByTagName("thead")[0];
@@ -524,7 +591,7 @@ function render_table(col_idx_of_link){
 	tfoot.style.display = "block";
 }
 function render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last){
-	//console.log(`SoFar __LINE__526  prf=${page_row_first}  prl=${page_row_last}`);
+	//console.log(`__LINE__526  prf=${page_row_first}  prl=${page_row_last}`);
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	document.getElementById("page-nav-rec-first").innerText = page_row_first.toString();
@@ -546,24 +613,21 @@ function render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last){
 				if(col_idx == 0){ // check-boxes
 					Cell.innerHTML = `<input type="checkbox" name="download-check" id="download-check-${row_idx}" onclick="update_selected_fromjs(this)" title="download check ${row_idx}" >`;
 					Cell.getElementsByTagName("input")[0].checked = checked;
-					let newCheckText = document.createElement("label");
+					let newCheckText = document.createElement("label"); Cell.appendChild(newCheckText);
 					newCheckText.setAttribute("name", "download-checktext");
 					newCheckText.setAttribute("for", "download-check-"+row_idx.toString());
 					newCheckText.setAttribute("style", "font-size:0px"); // do not display but include in CSV
-					Cell.appendChild(newCheckText);
 				} else {
 					if(col_idx == col_idx_of_link){
-						let newLink = document.createElement("a");
+						let newLink = document.createElement("a"); Cell.appendChild(newLink);
 						newLink.innerHTML = record_ary[row_idx][col_idx];
 						newLink.setAttribute("name", "download-link");
 						newLink.setAttribute("id", "download-link-"+row_idx.toString());
 						newLink.setAttribute("href", "#");
 						newLink.setAttribute("onclick", "do_download_fromjs(this)");
-						Cell.appendChild(newLink);
 					} else {
-						let newTD = document.createElement("a");
+						let newTD = document.createElement("a"); Cell.appendChild(newTD);
 						newTD.innerHTML = record_ary[row_idx][col_idx];
-						Cell.appendChild(newTD);
 					}
 				}
 			}
@@ -747,7 +811,7 @@ function do_download_fromhtml(){
 	do_download_fromjs(this);
 }
 function do_download_fromjs(calling_element){ // actual file download is up to the implementer
-	console.log(calling_element.id);
+	console.log('__LINE__794 '+calling_element.id);
 	window.alert("This is just a demo page.\nHow these links cause the actual file download is up to the implementer.");
 }
 // see MD doc for sources of the following functions
@@ -773,9 +837,7 @@ function download_table_as_csv(){
 	link.setAttribute("target", "_blank");
 	link.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csv_string));
 	link.setAttribute("download", filename);
-	document.body.appendChild(link);
-	link.click();
-	document.body.removeChild(link);
+	document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
 function calculateCRC(data) {
     const polynomial = 0xEDB88320;
