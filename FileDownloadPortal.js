@@ -1,5 +1,5 @@
 // console.log('__LINE__1 ');
-var js_ver = "2024-05-24c";
+var js_ver = "2024-05-28a";
 var period_preset = ''; // remember last button pressed
 var page_num = 0;
 var page_max = 0;
@@ -130,7 +130,7 @@ function update_filter_fromjs(caling_element){
 				new_dt.innerHTML = record_ary[0][col_idx];
 				let new_dd = document.createElement("dd"); dl.appendChild(new_dd);
 				new_dd.setAttribute("name", "filter");
-				new_dd.innerHTML = `<input type="text" value="" id="filter-${col_idx}" title="filter on ${col_idx}"/>`;
+				new_dd.innerHTML = `<input type="text" value="" name="filter-input" id="filter-${col_idx}" title="filter on ${col_idx}"/>`;
 			}
 		}
 	} else {
@@ -315,7 +315,6 @@ function update_period_fromjs(calling_element){
 }
 function get_iso_period_from_date_range(first_date, last_date){
 	let iso_period = '';
-	// console.log('__LINE__318 '+`fd="${first_date}"  ld="${last_date}"  __LINE__281 `);
 	let sodt = new Date(first_date);
 	let eodt = new Date(last_date);
 	let fd_y = sodt.getFullYear();
@@ -333,7 +332,6 @@ function get_iso_period_from_date_range(first_date, last_date){
 	if(!iso_period && ( fd_m == ld_m )){ iso_period = `${fd_y.toString()}-${fd_m.toString().padStart(2,"0")}`; }
 	if(!iso_period && ( (ld_m - fd_m) != 2 )){ iso_period = "-5"; }
 	if(!iso_period && ( !(ld_m % 3) )){ iso_period = `${ld_y.toString()}-Q${(ld_m/3).toString()}`; }
-	// console.log('__LINE__336 '+`ip="${iso_period}"  __LINE__299 `);
 	if(iso_period.substring(0,1) == '-'){ iso_period = ''; }
 	return iso_period;
 }
@@ -390,21 +388,21 @@ function update_cookies_fromhtml(){
 	update_cookies_fromjs(this);
 }
 function update_cookies_fromjs(calling_element){
-	console.log(`__LINE__393 DocumentCookie-=>${document.cookie}<=-`);
+	console.log(`__LINE__391 DocumentCookie-=>${document.cookie}<=-`);
     switch(calling_element.id){
 		case "cookie-save": if(true){
-			console.log('__LINE__396 ');
+			console.log('__LINE__394 ');
 			let lang_pref = document.getElementById('lang-pref').value;
 			setCookie("lang-pref", lang_pref, 365);
 			break;
 		}
 		case "cookie-delete": if(true){
-			console.log('__LINE__402 ');
+			console.log('__LINE__400 ');
 			setCookie("lang-pref", "", 0);
 			break;
 		}
 	}
-	console.log(`__LINE__407 DocumentCookie-=>${document.cookie}<=-`);
+	console.log(`__LINE__405 DocumentCookie-=>${document.cookie}<=-`);
 }
 function copy_link(){
 	navigator.clipboard.writeText('');
@@ -453,8 +451,8 @@ function search_submit_fromjs(submited){
 	if(filter_enabled){ // filters
 		let filter_logic = document.querySelector('input[name="filter-logic"]:checked').value;		
 		query += `&filter-logic=${filter_logic}`;
-		let num_cols = record_ary[0].length;
-		for(let col_idx = 1; col_idx < num_cols; col_idx++){
+		let num_cols = document.getElementsByName("filter-input").length;
+		for(let col_idx = 1; col_idx <= num_cols; col_idx++){
 			let f_val = document.getElementById("filter-"+col_idx.toString()).value;
 			if(f_val != ""){
 				query += `&filter-${col_idx}=${f_val}`;
@@ -462,7 +460,6 @@ function search_submit_fromjs(submited){
 		}
 	}
 	record_ary = [];
-	// console.log(`__LINE__465 -=>${query}<=-`);
 	response_json_txt = back_end_interface(query); // call back-end search to get array of results.
 	let jo = JSON.parse(response_json_txt);
 	for(let col_name in jo.records[0]) col_names.push(col_name);
@@ -496,7 +493,6 @@ function back_end_interface(query){ // simulating a back-end database query
 	if(query){ 
 		// replace with your own code to send the request and get the response
 		const backendParams = new URLSearchParams(query);
-		// console.log(`__LINE__499 -=>${backendParams}<=-`);
 		const first_date = backendParams.get('first-date');
 		const last_date = backendParams.get('last-date');
 		const elapsed_time = Date.parse(last_date) - Date.parse(first_date);
@@ -506,6 +502,7 @@ function back_end_interface(query){ // simulating a back-end database query
 		let filter_logic = backendParams.get('filter-logic');
 		let filter_1val = backendParams.get('filter-1');
 		let filter_2val = backendParams.get('filter-2');
+		
 		for(let day_idx=0; day_idx < num_days; day_idx++){
 			if( Math.random() >0.4 ){ // 0.4 = 60% chance a file is available. Use 0.0 for all rows, making off-by-one issues easier to spot.
 				let date_stamp = (new Date(Date.parse(first_date) + (day_idx * 1000 * 60 * 60 * 24)).toISOString()).split('T')[0];
@@ -538,7 +535,6 @@ function back_end_interface(query){ // simulating a back-end database query
 	return json_txt;
 }
 function render_table(col_idx_of_link){
-	// console.log('__LINE__541 '+'Rendering page '+ page_num.toString() );
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	const thead = document.getElementById("search-results").getElementsByTagName("thead")[0];
@@ -591,7 +587,6 @@ function render_table(col_idx_of_link){
 	tfoot.style.display = "block";
 }
 function render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last){
-	//console.log(`__LINE__594  prf=${page_row_first}  prl=${page_row_last}`);
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	document.getElementById("page-nav-rec-first").innerText = page_row_first.toString();
@@ -811,7 +806,7 @@ function do_download_fromhtml(){
 	do_download_fromjs(this);
 }
 function do_download_fromjs(calling_element){ // actual file download is up to the implementer
-	console.log('__LINE__814 '+calling_element.id);
+	console.log('__LINE__809 '+calling_element.id);
 	window.alert("This is just a demo page.\nHow these links cause the actual file download is up to the implementer.");
 }
 // see MD doc for sources of the following functions
