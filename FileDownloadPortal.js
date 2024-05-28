@@ -1,10 +1,9 @@
 // console.log('__LINE__1 ');
-var js_ver = "2024-05-28a";
+var js_ver = "2024-05-28b";
 var period_preset = ''; // remember last button pressed
 var page_num = 0;
 var page_max = 0;
 var page_size = 0;
-var col_idx_of_link = -1;
 var sort_col = 0; // index from 1
 var record_ary = []; // data records indexed from 1 as 0 contains the column header row
 var shown = 'both' // checked unchecked both
@@ -479,9 +478,8 @@ function search_submit_fromjs(submited){
 
 	let num_recs = record_ary.length -1;
 	if(num_recs > 0){ // render table of results
-		col_idx_of_link = 2; // index from 1 of received data (not including the 'Check' column)
 		// consider pre-pending a column for checked state
-		render_table(col_idx_of_link);
+		render_table();
 		document.getElementById("skip-to-content").style.display = "inline";
 		document.getElementById("search-results").style.display = "block";
 		document.getElementById("search-results").getElementsByTagName("tfoot")[0].style.display = "block";
@@ -506,7 +504,8 @@ function back_end_interface(query){ // simulating a back-end database query
 		for(let day_idx=0; day_idx < num_days; day_idx++){
 			if( Math.random() >0.4 ){ // 0.4 = 60% chance a file is available. Use 0.0 for all rows, making off-by-one issues easier to spot.
 				let date_stamp = (new Date(Date.parse(first_date) + (day_idx * 1000 * 60 * 60 * 24)).toISOString()).split('T')[0];
-				let filename = `Example_${date_stamp}.pdf`
+				// let filename = `Example_${date_stamp}.pdf`
+				let filename = `http://downloads/Example_${date_stamp}.pdf`
 				other_info = calculateCRC(filename).toString();
 				let matches_filters = true;
 				if(filter_logic){
@@ -534,7 +533,7 @@ function back_end_interface(query){ // simulating a back-end database query
 	let validate_jo = JSON.parse(json_txt); // tilt here if it fails basic validation
 	return json_txt;
 }
-function render_table(col_idx_of_link){
+function render_table(){
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	const thead = document.getElementById("search-results").getElementsByTagName("thead")[0];
@@ -571,7 +570,7 @@ function render_table(col_idx_of_link){
 		let page_row_last = num_recs;
 		document.getElementById("page-nav-page-num").innerText = page_num.toString();
 		document.getElementById("page-nav-page-max").innerText = page_max.toString();
-		render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last);
+		render_table_rows(tbody,page_row_first,page_row_last);
 	} else {
 		// reveal pagination navigation
 		document.getElementById("page-nav-links").style.display = "block";
@@ -582,11 +581,11 @@ function render_table(col_idx_of_link){
 		if(page_row_last > num_recs){ page_row_last = num_recs; }
 		document.getElementById("page-nav-page-num").innerText = page_num.toString();
 		document.getElementById("page-nav-page-max").innerText = page_max.toString();
-		render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last);
+		render_table_rows(tbody,page_row_first,page_row_last);
 	}
 	tfoot.style.display = "block";
 }
-function render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last){
+function render_table_rows(tbody,page_row_first,page_row_last){
 	let num_recs = record_ary.length -1;
 	let num_cols = record_ary[0].length;
 	document.getElementById("page-nav-rec-first").innerText = page_row_first.toString();
@@ -613,16 +612,17 @@ function render_table_rows(col_idx_of_link,tbody,page_row_first,page_row_last){
 					newCheckText.setAttribute("for", "download-check-"+row_idx.toString());
 					newCheckText.setAttribute("style", "font-size:0px"); // do not display but include in CSV
 				} else {
-					if(col_idx == col_idx_of_link){
-						let newLink = document.createElement("a"); Cell.appendChild(newLink);
-						newLink.innerHTML = record_ary[row_idx][col_idx];
-						newLink.setAttribute("name", "download-link");
-						newLink.setAttribute("id", "download-link-"+row_idx.toString());
-						newLink.setAttribute("href", "#");
-						newLink.setAttribute("onclick", "do_download_fromjs(this)");
+					let cell_content = record_ary[row_idx][col_idx]
+					if( cell_content.toLowerCase().match('^[a-z]+:\/\/') ){ // looks like a link
+							let newLink = document.createElement("a"); Cell.appendChild(newLink);
+							newLink.innerHTML = cell_content.split('/').slice(-1);
+							newLink.setAttribute("name", "download-link");
+							newLink.setAttribute("id", "download-link-"+row_idx.toString());
+							newLink.setAttribute("href", "#");
+							newLink.setAttribute("onclick", "do_download_fromjs(this)");
 					} else {
-						let newTD = document.createElement("a"); Cell.appendChild(newTD);
-						newTD.innerHTML = record_ary[row_idx][col_idx];
+							let newTD = document.createElement("a"); Cell.appendChild(newTD);
+							newTD.innerHTML = cell_content;
 					}
 				}
 			}
@@ -644,7 +644,7 @@ function update_page_size_fromjs(calling_element){
 	if(num_recs > 0){
 		page_num = 1;
 		document.getElementById("page-goto").value = page_num;
-		render_table(col_idx_of_link);
+		render_table();
 	}
 }
 function update_sorting_fromjs(calling_element){
@@ -668,7 +668,7 @@ function update_sorting_fromjs(calling_element){
 		sort_char = "v";
 	}
 	record_ary = headonly.concat(headless_ary);
-	render_table(col_idx_of_link);
+	render_table();
 }
 function sort_function(a, b){
 	let sort_col_idx = Math.abs(sort_col) -1;
@@ -687,34 +687,34 @@ function proc_page_nav_link_fromjs(calling_element){
     switch(calling_element.id){
 		case "page-nav-link-all": if(true){
 			document.getElementById("page-size").value = "0";
-			render_table(col_idx_of_link);
+			render_table();
 			break;
 		}
 		case "page-nav-link-first": if(true){
 			if(page_num > 1){
 				page_num = 1;
-				render_table(col_idx_of_link);
+				render_table();
 			}
 			break;
 		}
 		case "page-nav-link-last": if(true){
 			if(page_num < page_max){
 				page_num = page_max;
-				render_table(col_idx_of_link);
+				render_table();
 			}
 			break;
 		}
 		case "page-nav-link-prev": if(true){
 			if(page_num > 1){
 				page_num -= 1;
-				render_table(col_idx_of_link);
+				render_table();
 			}
 			break;
 		}
 		case "page-nav-link-next": if(true){
 			if(page_num < page_max){
 				page_num += 1;
-				render_table(col_idx_of_link);
+				render_table();
 			}
 			break;
 		}
@@ -727,7 +727,7 @@ function proc_page_nav_link_fromjs(calling_element){
 			}
 			if( (page_requested >= 1) && (page_requested <= page_max) ){
 				page_num = page_requested;
-				render_table(col_idx_of_link);
+				render_table();
 			}
 			break;
 		}
@@ -800,7 +800,7 @@ function update_shown_fromhtml(){
 }
 function update_shown_fromjs(calling_element){
 	shown = calling_element.id.split('-')[1];
-	render_table(col_idx_of_link);
+	render_table();
 }
 function do_download_fromhtml(){
 	do_download_fromjs(this);
