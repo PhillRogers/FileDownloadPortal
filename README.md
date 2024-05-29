@@ -29,6 +29,7 @@
 	Ascending or descending sort by clicking on any column name. Column names are accessible from keyboard tab index.  
 	Can show only checked, unchecked or both.  Download selected includes unseen pages.  
 	Optional column filters dynamically created, with clear 'AND' / 'OR' choice.  
+	Per-column filter search method is clear and at user's choice for text/regex, case sensitive/insensitive, inclusive/exclusive.
 # Examples:
 	?period-preset=last-quarter&page-size=0&search-submit#search-results  
 # References:
@@ -42,11 +43,10 @@
 # Work in progress:
 	Should add ISO8601 weeks E.g. (1995-W03) which may be useful for retail & hospitality.  
 	Get lang-pref from cookie or GET params is work-in-progress.  
-	Per-column filter modifiers: [not] [case sensitive] [Regex]
 	Basket
 		to build up selection across multiple different query criteria.
 		"Download selected n" -> "Add selected n to basket" ... 
-		seperate page?  No date selector or column filters.
+		separate page?  No date selector or column filters.
 		would that be too disconnected from the page in front of the data?
 	GET params to include: sort col number, col filters
 	Distinguish which col was last sorted by & which direction
