@@ -1,10 +1,11 @@
 # Purpose:
 	Example of web page for downloading files to demonstrate best practices for human usability & automation.  
+	Reduce the barriers for maintainers of existing portals with poor usability, to replace their front-end.  
 # Version:
-	Copyright (c) 2024 Phill Rogers  
+	Copyright (c) 2024 Phill Rogers.  Last update: 2024-05-29
 # License:
-	Enhance Group Ltd. hereby disclaims all copyright interest in the program "FileDownloadPortal" (which demonstrates good portal design) written by Phill Rogers.  
 	GPL3 https://www.gnu.org/licenses/gpl-3.0.txt  
+	Enhance Group Ltd. hereby disclaims all copyright interest in the program "FileDownloadPortal" (which demonstrates good portal design) written by Phill Rogers.  
 # Features:
 	Modern standard DHTML requiring no external library.  
 	Standard HTML inputs for date to use built-in validation, accessible usability & compliant browser compatibility.  
@@ -28,7 +29,6 @@
 	Ascending or descending sort by clicking on any column name. Column names are accessible from keyboard tab index.  
 	Can show only checked, unchecked or both.  Download selected includes unseen pages.  
 	Optional column filters dynamically created, with clear 'AND' / 'OR' choice.  
-# Work in progress:
 # Examples:
 	?period-preset=last-quarter&page-size=0&search-submit#search-results  
 # References:
@@ -39,6 +39,20 @@
 	https://www.w3schools.com/js/js_cookies.asp  
 # Notes:
 	Form input fields which might be "required" in production are "notrequired" here for easier demonstration.  
+# Work in progress:
 	Should add ISO8601 weeks E.g. (1995-W03) which may be useful for retail & hospitality.  
 	Get lang-pref from cookie or GET params is work-in-progress.  
-  
+	Per-column filter modifiers: [not] [case sensitive] [Regex]
+	Basket
+		to build up selection across multiple different query criteria.
+		"Download selected n" -> "Add selected n to basket" ... 
+		seperate page?  No date selector or column filters.
+		would that be too disconnected from the page in front of the data?
+	GET params to include: sort col number, col filters
+	Distinguish which col was last sorted by & which direction
+	Back-end simulation:
+		delay between submitting search request & receiving search results
+		Make async so we can show the user an hourglass or similar.  Promise? WebWorker in separate JS file?
+	Only un-hide cookie save/delete if the lang-pref drop-down has been used
+	Consider: automatically populate lang-pref in HTML from those available in JS
+	Sub-function to build-up full record set by repeated requests of limited size?  Should be up to the implementer.
