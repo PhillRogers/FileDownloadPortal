@@ -1,5 +1,5 @@
 // console.log('__LINE__1 ');
-var js_ver = "2024-05-28b";
+var js_ver = "2024-05-29c";
 var period_preset = ''; // remember last button pressed
 var page_num = 0;
 var page_max = 0;
@@ -8,7 +8,8 @@ var sort_col = 0; // index from 1
 var record_ary = []; // data records indexed from 1 as 0 contains the column header row
 var shown = 'both' // checked unchecked both
 var filter_enabled = false;
-if(true){ // initialize event handlers
+init_event_handlers();
+function init_event_handlers(){
 	window.addEventListener("load", body_load, false);
 	document.getElementById("iso-period").addEventListener("change", update_period_fromhtml, false);
 	document.getElementById("last-month").addEventListener("click", update_period_fromhtml, false);
@@ -110,7 +111,6 @@ function update_filter_fromjs(caling_element){
 	if(filter_enabled){
 		document.getElementById('filter-logic-radio').style.display = "inline";
 		let col_names = ['Check'];
-		// response_json_txt = '{ "records" : [ { "Other info":"", "PDF download":"" } ]}';
 		response_json_txt = back_end_interface(''); // call back-end search to get array of just header row.
 		let jo = JSON.parse(response_json_txt);
 		for(let col_name in jo.records[0]) col_names.push(col_name);
@@ -129,7 +129,14 @@ function update_filter_fromjs(caling_element){
 				new_dt.innerHTML = record_ary[0][col_idx];
 				let new_dd = document.createElement("dd"); dl.appendChild(new_dd);
 				new_dd.setAttribute("name", "filter");
-				new_dd.innerHTML = `<input type="text" value="" name="filter-input" id="filter-${col_idx}" title="filter on ${col_idx}"/>`;
+				new_dd.innerHTML = `<input type="text" value="" name="filter-input" id="filter-${col_idx}-pattern" title="filter on ${col_idx}"/>`;
+				new_dd.innerHTML += `
+				<span id="filter-${col_idx}-radio">Method:
+					<label for="filter-${col_idx}-text">Text</label><input type="radio" name="filter-${col_idx}-method" id="filter-${col_idx}-text" value="Text" checked />
+					<label for="filter-${col_idx}-regex">RegEx</label><input type="radio" name="filter-${col_idx}-method" id="filter-${col_idx}-regex" value="RegEx" />
+				</span>`;
+				new_dd.innerHTML += `&nbsp;<label for="filter-${col_idx}-ignorecase">Ignore case:</label><input type="checkbox" id="filter-${col_idx}-ignorecase" />`;
+				new_dd.innerHTML += `&nbsp;<label for="filter-${col_idx}-exclude">Exclude:</label><input type="checkbox" id="filter-${col_idx}-exclude" />`;
 			}
 		}
 	} else {
@@ -448,16 +455,21 @@ function search_submit_fromjs(submited){
 	let col_names = ['Check'];
 	let query = '?first-date='+ document.getElementById("first-date").value +'&last-date='+ document.getElementById("last-date").value
 	if(filter_enabled){ // filters
-		let filter_logic = document.querySelector('input[name="filter-logic"]:checked').value;		
+		let filter_logic = document.querySelector('input[name="filter-logic"]:checked').value;
 		query += `&filter-logic=${filter_logic}`;
 		let num_cols = document.getElementsByName("filter-input").length;
 		for(let col_idx = 1; col_idx <= num_cols; col_idx++){
-			let f_val = document.getElementById("filter-"+col_idx.toString()).value;
-			if(f_val != ""){
-				query += `&filter-${col_idx}=${f_val}`;
-			}
+			let f_pattern = document.getElementById(`filter-${col_idx}-pattern`).value;
+			if(f_pattern != ""){ query += `&filter-${col_idx}-pattern=${f_pattern}`; }
+			let f_method = document.querySelector('input[name="'+`filter-${col_idx}-method`+'"]:checked').value;
+			if(f_method != ""){ query += `&filter-${col_idx}-method=${f_method}`; }
+			let f_ignorecase = document.getElementById(`filter-${col_idx}-ignorecase`).checked;
+			if(f_ignorecase != ""){ query += `&filter-${col_idx}-ignorecase=${f_ignorecase}`; }
+			let f_exclude = document.getElementById(`filter-${col_idx}-exclude`).checked;
+			if(f_exclude != ""){ query += `&filter-${col_idx}-exclude=${f_exclude}`; }
 		}
 	}
+	// console.log(`__LINE__469 -=>${query}<=-`);
 	record_ary = [];
 	response_json_txt = back_end_interface(query); // call back-end search to get array of results.
 	let jo = JSON.parse(response_json_txt);
@@ -486,8 +498,9 @@ function search_submit_fromjs(submited){
 		// the visibility of tfoot can be tested to ensure the whole table has finished loading
 	} // handle zero results with grace.
 }
-function back_end_interface(query){ // simulating a back-end database query
+function back_end_interface(query){ // basic simulation of a back-end database query
 	let json_txt = '';
+	// console.log(`__LINE__503 -=>${query}<=-`);
 	if(query){ 
 		// replace with your own code to send the request and get the response
 		const backendParams = new URLSearchParams(query);
@@ -497,30 +510,43 @@ function back_end_interface(query){ // simulating a back-end database query
 		const num_days = 1 + Math.round(elapsed_time / (1000 * 60 * 60 * 24));
 		json_txt = '{ "records" : [ ';
 		let rec_count = 0;
-		let filter_logic = backendParams.get('filter-logic');
-		let filter_1val = backendParams.get('filter-1');
-		let filter_2val = backendParams.get('filter-2');
-		
+		let f_logic = backendParams.get('filter-logic');
+		let f1_pattern = backendParams.get('filter-1-pattern');
+		let f1_method = backendParams.get('filter-1-method');
+		let f1_ignorecase = (backendParams.get('filter-1-ignorecase') == "true");
+		let f1_exclude = (backendParams.get('filter-1-exclude') == "true");
+		let f2_pattern = backendParams.get('filter-2-pattern');
+		let f2_method = backendParams.get('filter-2-method');
+		let f2_ignorecase = (backendParams.get('filter-2-ignorecase') == "true");
+		let f2_exclude = (backendParams.get('filter-2-exclude') == "true");
+		if( f1_ignorecase || f2_ignorecase || f1_exclude || f2_exclude || (f1_method && f1_method.toLowerCase()=="regex") || (f2_method && f2_method.toLowerCase()=="regex") ){
+			let msg = "Simulated back-end only does inclusive case-sensitive text matching.";
+			setTimeout(function(){ alert(msg); },1); // window.status = msg; // modern browsers hide the status bar :-(
+		}
 		for(let day_idx=0; day_idx < num_days; day_idx++){
 			if( Math.random() >0.4 ){ // 0.4 = 60% chance a file is available. Use 0.0 for all rows, making off-by-one issues easier to spot.
 				let date_stamp = (new Date(Date.parse(first_date) + (day_idx * 1000 * 60 * 60 * 24)).toISOString()).split('T')[0];
-				// let filename = `Example_${date_stamp}.pdf`
-				let filename = `http://downloads/Example_${date_stamp}.pdf`
-				other_info = calculateCRC(filename).toString();
+				// let download_link = `Example_${date_stamp}.pdf`
+				let download_link = `http://downloads/Example_${date_stamp}.`;
+				if( Math.random() >0.8 ){ download_link += 'xlsx'; } else { download_link += 'pdf'; }
+				let other_info = calculateCRC(download_link.split('/').slice(-1)[0]).toString();
 				let matches_filters = true;
-				if(filter_logic){
-					if(filter_logic == "and"){
-						if(filter_1val) if(!(other_info.includes(filter_1val))) matches_filters = false;
-						if(filter_2val) if(!(filename.includes(filter_2val))) matches_filters = false;
+
+				if(f_logic){
+					if(f_logic == "and"){
+						matches_filters = true;
+						if(f1_pattern) if(!(other_info.includes(f1_pattern))) matches_filters = false;
+						if(f2_pattern) if(!(download_link.includes(f2_pattern))) matches_filters = false;
 					}
-					if(filter_logic == "or"){
+					if(f_logic == "or"){
 						matches_filters = false;
-						if(filter_1val) if(other_info.includes(filter_1val)) matches_filters = true;
-						if(filter_2val) if(filename.includes(filter_2val)) matches_filters = true;
+						if(f1_pattern) if(other_info.includes(f1_pattern)) matches_filters = true;
+						if(f2_pattern) if(download_link.includes(f2_pattern)) matches_filters = true;
 					}
 				}
+
 				if(matches_filters){
-					json_txt += `{ "Other info":"${other_info}", "PDF download":"${filename}" },`;
+					json_txt += `{ "Other info":"${other_info}", "Report download":"${download_link}" },`;
 					rec_count++;
 				}
 			}
@@ -528,7 +554,7 @@ function back_end_interface(query){ // simulating a back-end database query
 		if(rec_count > 0){ json_txt = json_txt.trim().slice(0,-1); }
 		json_txt += ' ]}';
 	} else {
-		json_txt = '{ "records" : [ { "Other info":"", "PDF download":"" } ]}';
+		json_txt = '{ "records" : [ { "Other info":"", "Report download":"" } ]}';
 	}
 	let validate_jo = JSON.parse(json_txt); // tilt here if it fails basic validation
 	return json_txt;
@@ -615,7 +641,7 @@ function render_table_rows(tbody,page_row_first,page_row_last){
 					let cell_content = record_ary[row_idx][col_idx]
 					if( cell_content.toLowerCase().match('^[a-z]+:\/\/') ){ // looks like a link
 							let newLink = document.createElement("a"); Cell.appendChild(newLink);
-							newLink.innerHTML = cell_content.split('/').slice(-1);
+							newLink.innerHTML = cell_content.split('/').slice(-1)[0];
 							newLink.setAttribute("name", "download-link");
 							newLink.setAttribute("id", "download-link-"+row_idx.toString());
 							newLink.setAttribute("href", "#");
@@ -806,7 +832,7 @@ function do_download_fromhtml(){
 	do_download_fromjs(this);
 }
 function do_download_fromjs(calling_element){ // actual file download is up to the implementer
-	console.log('__LINE__809 '+calling_element.id);
+	// console.log('__LINE__809 '+calling_element.id);
 	window.alert("This is just a demo page.\nHow these links cause the actual file download is up to the implementer.");
 }
 // see MD doc for sources of the following functions
